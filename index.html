@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>User's Inventory</title>
+    <script src="https://unpkg.com/react/umd/react.development.js"></script>
+    <script src="https://unpkg.com/react-dom/umd/react-dom.development.js"></script>
+    <script src="https://unpkg.com/@babel/standalone/babel.js"></script>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-100">
+    <div id="root"></div>
+    <script type="text/babel">
+        const App = () => {
+            const [users, setUsers] = React.useState([
+                { id: 1, name: "John Doe", age: 18, dob: "2003-03-27", gender: "Male", food: "Pizza", hobbies: "Cricket" }
+            ]);
+            const [isModalOpen, setIsModalOpen] = React.useState(false);
+            const [isViewing, setIsViewing] = React.useState(false);
+            const [isEditing, setIsEditing] = React.useState(false);
+            const [selectedUser, setSelectedUser] = React.useState(null);
+            const [formData, setFormData] = React.useState({
+                name: "",
+                age: "",
+                dob: "",
+                gender: "",
+                food: "",
+                hobbies: ""
+            });
+
+            const openModal = (user = null, viewOnly = false) => {
+                setIsModalOpen(true);
+                setIsViewing(viewOnly);
+                setIsEditing(!viewOnly && !!user);
+                if (user) {
+                    setFormData(user);
+                    setSelectedUser(user);
+                } else {
+                    setFormData({ name: "", age: "", dob: "", gender: "", food: "", hobbies: "" });
+                }
+            };
+
+            const closeModal = () => {
+                setIsModalOpen(false);
+                setSelectedUser(null);
+                setIsViewing(false);
+            };
+
+            const handleInputChange = (e) => {
+                const { name, value } = e.target;
+                setFormData({ ...formData, [name]: value });
+            };
+
+            const addUser = () => {
+                const newUser = {
+                    id: users.length + 1,
+                    ...formData
+                };
+                setUsers([...users, newUser]);
+                closeModal();
+            };
+
+            const editUser = () => {
+                const updatedUsers = users.map(user =>
+                    user.id === selectedUser.id ? { ...user, ...formData } : user
+                );
+                setUsers(updatedUsers);
+                closeModal();
+            };
+
+            const deleteUser = (id) => {
+                setUsers(users.filter(user => user.id !== id));
+            };
+
+            return (
+                <div className="min-h-screen bg-gray-100">
+                    <header className="bg-gray-900 text-white p-4 flex justify-between items-center">
+                        <h1 className="text-lg">USER'S INVENTORY</h1>
+                        <button className="bg-blue-500 text-white px-4 py-2 rounded" onClick={() => openModal()}>ADD USER</button>
+                    </header>
+                    <main className="p-8">
+                        <h2 className="text-2xl font-bold mb-4">LIST OF USERS</h2>
+                        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-3">
+                            {users.map(user => (
+                                <div key={user.id} className="bg-white p-4 rounded shadow-md">
+                                    <h3 className="font-bold">{user.name}</h3>
+                                    <p>AGE: {user.age}</p>
+                                    <p>DOB: {user.dob}</p>
+                                    <p>GENDER: {user.gender}</p>
+                                    <p>FOOD: {user.food}</p>
+                                    <p>HOBBIES: {user.hobbies}</p>
+                                    <div className="flex justify-between mt-4">
+                                        <button className="bg-red-500 text-white px-4 py-2 rounded" onClick={() => deleteUser(user.id)}>DELETE</button>
+                                        <button className="bg-blue-500 text-white px-4 py-2 rounded" onClick={() => openModal(user, true)}>VIEW</button>
+                                        <button className="bg-blue-500 text-white px-4 py-2 rounded" onClick={() => openModal(user)}>EDIT</button>
+                                    </div>
+                                </div>
+                            ))}
+                        </div>
+                    </main>
+
+                    {isModalOpen && (
+                        <div className="fixed inset-0 bg-gray-800 bg-opacity-50 flex justify-center items-center">
+                            <div className="bg-white p-8 rounded shadow-lg max-w-lg w-full">
+                                <h2 className="text-xl font-bold mb-4">
+                                    {isViewing ? "View User" : isEditing ? "Edit User" : "Add User"}
+                                </h2>
+                                <form className="space-y-4">
+                                    <div>
+                                        <label className="block text-gray-700">Name</label>
+                                        <input
+                                            type="text"
+                                            name="name"
+                                            value={formData.name}
+                                            onChange={handleInputChange}
+                                            className="w-full p-2 border rounded"
+                                            readOnly={isViewing}
+                                            required
+                                        />
+                                    </div>
+                                    <div>
+                                        <label className="block text-gray-700">Age</label>
+                                        <input
+                                            type="number"
+                                            name="age"
+                                            value={formData.age}
+                                            onChange={handleInputChange}
+                                            className="w-full p-2 border rounded"
+                                            readOnly={isViewing}
+                                            required
+                                        />
+                                    </div>
+                                    <div>
+                                        <label className="block text-gray-700">DOB</label>
+                                        <input
+                                            type="date"
+                                            name="dob"
+                                            value={formData.dob}
+                                            onChange={handleInputChange}
+                                            className="w-full p-2 border rounded"
+                                            readOnly={isViewing}
+                                            required
+                                        />
+                                    </div>
+                                    <div>
+                                        <label className="block text-gray-700">Gender</label>
+                                        <select
+                                            name="gender"
+                                            value={formData.gender}
+                                            onChange={handleInputChange}
+                                            className="w-full p-2 border rounded"
+                                            readOnly={isViewing}
+                                            required
+                                        >
+                                            <option value="">Select Gender</option>
+                                            <option value="Male">Male</option>
+                                            <option value="Female">Female</option>
+                                        </select>
+                                    </div>
+                                    <div>
+                                        <label className="block text-gray-700">Favorite Food</label>
+                                        <input
+                                            type="text"
+                                            name="food"
+                                            value={formData.food}
+                                            onChange={handleInputChange}
+                                            className="w-full p-2 border rounded"
+                                            readOnly={isViewing}
+                                            required
+                                        />
+                                    </div>
+                                    <div>
+                                        <label className="block text-gray-700">Hobbies</label>
+                                        <input
+                                            type="text"
+                                            name="hobbies"
+                                            value={formData.hobbies}
+                                            onChange={handleInputChange}
+                                            className="w-full p-2 border rounded"
+                                            readOnly={isViewing}
+                                            required
+                                        />
+                                    </div>
+                                </form>
+                                <div className="flex justify-end mt-4 space-x-2">
+                                    <button className="bg-gray-500 text-white px-4 py-2 rounded" onClick={closeModal}>Close</button>
+                                    {!isViewing && (
+                                        <button
+                                            className="bg-blue-500 text-white px-4 py-2 rounded"
+                                            onClick={isEditing ? editUser : addUser}
+                                        >
+                                            {isEditing ? "Save Changes" : "Add User"}
+                                        </button>
+                                    )}
+                                </div>
+                            </div>
+                        </div>
+                    )}
+                </div>
+            );
+        };
+        
+        ReactDOM.render(<App />, document.getElementById('root'));
+    </script>
+  
+</body>
+</html>
